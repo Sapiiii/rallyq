@@ -1,0 +1,8 @@
+model Player {
+    id Int @id @default(autoincrement())
+    sessionId Int
+    session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+    name String 
+    gamesPlayed PlayerInGame[]
+}

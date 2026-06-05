@@ -1,0 +1,7 @@
+model Session {
+    id Int @id @default(autoincrement())
+    
+    code Int @unique
+    games Game[]
+    players Player[]
+}
