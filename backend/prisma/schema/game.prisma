@@ -3,18 +3,9 @@ model Game {
     sessionId Int
     session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-    score Score?
+    teamAScore  Int
+    teamBScore  Int
     playersInGame PlayerInGame[]
-}
-
-model Score {
-    id     Int      @id @default(autoincrement())
-    gameId Int      @unique 
-    game   Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-
-    teamA  Int
-    teamB  Int
-    scoringSystem ScoringSystem
 }
 
 model PlayerInGame {
@@ -28,10 +19,6 @@ model PlayerInGame {
     @@id([gameId, playerId])
 }
 
-enum ScoringSystem {
-    BEST_OF_15
-    BEST_OF_21
-}
 
 enum MatchSide {
     TEAM_A 
