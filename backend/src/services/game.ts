@@ -52,6 +52,24 @@ export const createGame = async (
 };
 
 /**
+ * Retrieves all completed games for a given session.
+ *
+ * @param sessionId - The ID of the session to retrieve games for
+ * @returns An array of games with their players
+ * @throws {Error} If the session does not exist
+ */
+export const getGamesBySession = async (sessionId: number) => {
+  return prisma.game.findMany({
+    where: { sessionId },
+    include: {
+      playersInGame: {
+        include: { player: true },
+      },
+    },
+  });
+};
+
+/**
  * Validates the players in a badminton game.
  * Supports both singles (1v1) and doubles (2v2) formats.
  *
