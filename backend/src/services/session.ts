@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { validatePlayerName } from "./player";
+import { generateToken, hashToken } from "../lib/token";
 
 /**
  * Creates a new session with the given host name.
@@ -15,10 +16,13 @@ import { validatePlayerName } from "./player";
 export const createSession = async (hostName: string) => {
   const cleanedHostName = validatePlayerName(hostName);
   const code = await findUniqueCode();
+  const token = generateToken();
+  const hashedToken = hashToken(token);
 
-  return prisma.session.create({
+  const session = await prisma.session.create({
     data: {
       code,
+      hostToken: hashedToken,
       players: {
         create: { name: cleanedHostName },
       },
@@ -27,6 +31,8 @@ export const createSession = async (hostName: string) => {
       players: true,
     },
   });
+
+  return { session, token };
 };
 
 /**

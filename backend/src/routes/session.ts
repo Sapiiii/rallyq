@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { startSession } from "../controllers/session";
-import { endSession } from "../controllers/session";
+import { startSession, endSession } from "../controllers/session";
+import { verifyHost } from "../middlewares/host-auth";
 
 const sessionRouter = Router();
 
 sessionRouter.post("/create", startSession);
-sessionRouter.delete("/delete/:id", endSession);
+sessionRouter.delete("/delete/:id", verifyHost, endSession);
 
 export default sessionRouter;
