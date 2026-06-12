@@ -1,38 +1,58 @@
 import { prisma } from "../config/prisma";
 import { validatePlayerName } from "./player";
 import { generateToken, hashToken } from "../lib/token";
+import { Prisma } from "../../prisma/generated/prisma/client";
 
 /**
  * Creates a new session with the given host name.
- * Validates the host name, generates a unique code, and creates
+ * Validates the host name, generates a unique code, host token, and creates
  * the session with the host as the first player.
  *
+ * Note: Includes a 20-attempt retry loop for session 'code' collisions.
+ * Host token collisions are not handled as they are statistically negligible to warrant retries
+ *
  * @param hostName - The name of the player hosting the session
- * @returns The created session with its players
+ * @returns The created session object and the unhashed host token
  * @throws {Error} If the host name is invalid
- * @throws {Error} If a unique session code cannot be generated within 20 attempts
- * @throws {Error} If the database operation fails
+ * @throws {Error} If a unique session 'code' cannot be acquired within 20 attempts
+ * @throws {Error} If the database operation fails for any other reason
  */
 export const createSession = async (hostName: string) => {
   const cleanedHostName = validatePlayerName(hostName);
-  const code = await findUniqueCode();
   const token = generateToken();
   const hashedToken = hashToken(token);
 
-  const session = await prisma.session.create({
-    data: {
-      code,
-      hostToken: hashedToken,
-      players: {
-        create: { name: cleanedHostName },
-      },
-    },
-    include: {
-      players: true,
-    },
-  });
+  const MAX_ATTEMPTS = 20;
 
-  return { session, token };
+  for (let attempts = 0; attempts < MAX_ATTEMPTS; attempts++) {
+    try {
+      const code = generateSessionCode();
+      const session = await prisma.session.create({
+        data: {
+          code,
+          hostToken: hashedToken,
+          players: {
+            create: { name: cleanedHostName },
+          },
+        },
+        include: {
+          players: true,
+        },
+      });
+      return { session, token };
+    } catch (error: any) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        continue; // We hit a code collision so we try again ('P2002' refers to unique constraint failure)
+      }
+      throw error;
+    }
+  }
+  throw new Error(
+    `Could not generate a unique session code after ${MAX_ATTEMPTS} attempts`,
+  );
 };
 
 /**
@@ -49,27 +69,6 @@ export const deleteSession = async (sessionId: number) => {
     },
   });
 };
-
-/**
- * Generates and returns a unique 4 digit session code.
- * Retries up to 20 times before throwing an error.
- *
- * @returns A unique 4 digit session code
- * @throws {Error} If a unique code cannot be found within 20 attempts
- */
-async function findUniqueCode() {
-  const maxAttempts = 20;
-  for (let i = 0; i < maxAttempts; i++) {
-    const generatedCode = generateSessionCode();
-    const existing = await prisma.session.findUnique({
-      where: { code: generatedCode },
-    });
-    if (!existing) return generatedCode;
-  }
-  throw new Error(
-    `Could not generate a unique session code after ${maxAttempts} attempts`,
-  );
-}
 
 /**
  * Generates a random 4 digit code between 1000 and 9999.
