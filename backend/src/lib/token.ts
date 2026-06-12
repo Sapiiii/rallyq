@@ -1,7 +1,7 @@
-import { createHash, randomUUID } from "crypto";
+import { createHash, randomBytes } from "crypto";
 
 export function generateToken(): string {
-  return randomUUID();
+  return randomBytes(4).toString("hex").toUpperCase();
 }
 
 export function hashToken(token: string): string {
