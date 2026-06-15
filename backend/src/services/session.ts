@@ -1,5 +1,4 @@
 import { prisma } from "../config/prisma";
-import { validatePlayerName } from "./player";
 import { generateToken, hashToken } from "../lib/token";
 import { Prisma } from "../../prisma/generated/prisma/client";
 
@@ -11,14 +10,13 @@ import { Prisma } from "../../prisma/generated/prisma/client";
  * Note: Includes a 20-attempt retry loop for session 'code' collisions.
  * Host token collisions are not handled as they are statistically negligible to warrant retries
  *
- * @param hostName - The name of the player hosting the session
+ * @param hostName - The pre-validated name of the player hosting the session
  * @returns The created session object and the unhashed host token
  * @throws {Error} If the host name is invalid
  * @throws {Error} If a unique session 'code' cannot be acquired within 20 attempts
  * @throws {Error} If the database operation fails for any other reason
  */
 export const createSession = async (hostName: string) => {
-  const cleanedHostName = validatePlayerName(hostName);
   const token = generateToken();
   const hashedToken = hashToken(token);
 
@@ -32,7 +30,7 @@ export const createSession = async (hostName: string) => {
           code,
           hostToken: hashedToken,
           players: {
-            create: { name: cleanedHostName },
+            create: { name: hostName },
           },
         },
         include: {
