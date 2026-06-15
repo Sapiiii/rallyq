@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma";
 import { generateToken, hashToken } from "../lib/token";
 import { Prisma } from "../../prisma/generated/prisma/client";
+import { PlayerNameInput } from "../middlewares/zod-schema";
 
 /**
  * Creates a new session with the given host name.
@@ -16,7 +17,7 @@ import { Prisma } from "../../prisma/generated/prisma/client";
  * @throws {Error} If a unique session 'code' cannot be acquired within 20 attempts
  * @throws {Error} If the database operation fails for any other reason
  */
-export const createSession = async (hostName: string) => {
+export const createSession = async ({ name: hostName }: PlayerNameInput) => {
   const token = generateToken();
   const hashedToken = hashToken(token);
 

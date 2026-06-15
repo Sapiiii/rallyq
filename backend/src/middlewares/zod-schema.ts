@@ -14,6 +14,8 @@ export const CreateGameSchema = z.object({
   ),
 });
 
+export type CreateGameInput = z.infer<typeof CreateGameSchema>;
+
 export const PlayerNameInputSchema = z.object({
   name: z
     .string()
@@ -21,3 +23,5 @@ export const PlayerNameInputSchema = z.object({
     .min(1, "Player name is required")
     .max(20, "Player name must be 20 characters or less"),
 });
+
+export type PlayerNameInput = z.infer<typeof PlayerNameInputSchema>;

@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { MatchSide } from "../../prisma/generated/prisma/client";
+import { CreateGameInput } from "../middlewares/zod-schema";
 
 export const SCORING_SYSTEMS = {
   FIRST_TO_21: "FIRST_TO_21",
@@ -14,22 +15,17 @@ type ScoringSystem = ObjectValues<typeof SCORING_SYSTEMS>;
  * Validates players and scores before persisting to the database.
  *
  * @param sessionId - The ID of the session this game belongs to
- * @param teamAScore - The final score of team A
- * @param teamBScore - The final score of team B
- * @param scoringSystem - The scoring system used in this game
- * @param players - Array of players with their assigned sides
+ * @param gameData - The validated game input properties (scores, scoring system, and player array)
  * @returns The created game with its players
- * @throws {Error} If player validation fails
- * @throws {Error} If score validation fails
+ * @throws {Error} If player layouts are invalid (e.g., duplicate assignments, uneven teams)
+ * @throws {Error} If scores do not satisfy badminton win rules
  * @throws {Error} If the database operation fails
  */
 export const createGame = async (
   sessionId: number,
-  teamAScore: number,
-  teamBScore: number,
-  scoringSystem: ScoringSystem,
-  players: { playerId: number; side: MatchSide }[],
+  gameData: CreateGameInput,
 ) => {
+  const { teamAScore, teamBScore, scoringSystem, players } = gameData;
   validatePlayers(players);
   validateScore(teamAScore, teamBScore, scoringSystem);
 
