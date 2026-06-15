@@ -19,6 +19,7 @@ type ScoringSystem = ObjectValues<typeof SCORING_SYSTEMS>;
  * @returns The created game with its players
  * @throws {Error} If player layouts are invalid (e.g., duplicate assignments, uneven teams)
  * @throws {Error} If scores do not satisfy badminton win rules
+ * @throws {Error} If one or more players do not exist in this session
  * @throws {Error} If the database operation fails
  */
 export const createGame = async (
@@ -28,6 +29,19 @@ export const createGame = async (
   const { teamAScore, teamBScore, scoringSystem, players } = gameData;
   validatePlayers(players);
   validateScore(teamAScore, teamBScore, scoringSystem);
+
+  const incomingPlayerIds = players.map((p) => p.playerId);
+  const validPlayers = await prisma.player.findMany({
+    where: {
+      id: { in: incomingPlayerIds },
+      sessionId: sessionId,
+    },
+    select: { id: true },
+  });
+
+  if (validPlayers.length !== incomingPlayerIds.length) {
+    throw new Error("One or more players do not exist in this session");
+  }
 
   return prisma.game.create({
     data: {
