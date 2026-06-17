@@ -27,21 +27,14 @@ export const createGame = async (
   gameData: CreateGameInput,
 ) => {
   const { teamAScore, teamBScore, scoringSystem, players } = gameData;
-  validatePlayers(players);
+
+  validatePlayerLayout(players);
   validateScore(teamAScore, teamBScore, scoringSystem);
 
-  const incomingPlayerIds = players.map((p) => p.playerId);
-  const validPlayers = await prisma.player.findMany({
-    where: {
-      id: { in: incomingPlayerIds },
-      sessionId: sessionId,
-    },
-    select: { id: true },
-  });
-
-  if (validPlayers.length !== incomingPlayerIds.length) {
-    throw new Error("One or more players do not exist in this session");
-  }
+  await ensurePlayersBelongToSession(
+    sessionId,
+    players.map((p) => p.playerId),
+  );
 
   return prisma.game.create({
     data: {
@@ -80,15 +73,19 @@ export const getGamesBySession = async (sessionId: number) => {
 };
 
 /**
- * Validates the players in a badminton game.
+ * Validates team balance and player distribution constraints.
  * Supports both singles (1v1) and doubles (2v2) formats.
+ *
+ * @note Does not check player existence or session membership.
  *
  * @param players - Array of players with their assigned sides
  * @throws {Error} If the same player is assigned to more than one slot
  * @throws {Error} If either side has no players
  * @throws {Error} If both sides don't have equal number of players
  */
-function validatePlayers(players: { playerId: number; side: MatchSide }[]) {
+function validatePlayerLayout(
+  players: { playerId: number; side: MatchSide }[],
+) {
   let teamACount = 0;
   let teamBCount = 0;
   const uniquePlayerIds = new Set<number>();
@@ -110,6 +107,23 @@ function validatePlayers(players: { playerId: number; side: MatchSide }[]) {
   if (teamBCount === 0) throw new Error("Team B must have at least one player");
   if (teamACount !== teamBCount)
     throw new Error("Both sides must have equal number of players");
+}
+
+/**
+ * Verifies all player IDs belong strictly to the target session.
+ * @throws {Error} If any player ID is missing or belongs to another session
+ */
+async function ensurePlayersBelongToSession(
+  sessionId: number,
+  playerIds: number[],
+) {
+  const validPlayers = await prisma.player.findMany({
+    where: { id: { in: playerIds }, sessionId },
+    select: { id: true },
+  });
+  if (validPlayers.length !== playerIds.length) {
+    throw new Error("One or more players do not exist in this session");
+  }
 }
 
 /**
