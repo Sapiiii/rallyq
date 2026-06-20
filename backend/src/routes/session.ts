@@ -5,6 +5,6 @@ import { verifyHost } from "../middlewares/host-auth";
 const sessionRouter = Router();
 
 sessionRouter.post("/create", startSession);
-sessionRouter.delete("/delete/:id", verifyHost, endSession);
+sessionRouter.delete("/delete/:sessionCode", verifyHost, endSession);
 
 export default sessionRouter;
