@@ -55,17 +55,15 @@ export const createSession = async ({ name: hostName }: CreatePlayer) => {
 };
 
 /**
- * Deletes a session by ID along with all associated data via cascade.
+ * Deletes a session by code along with all associated data via cascade.
  *
- * @param sessionId - The ID of the session to delete
+ * @param code - The code of the session to delete
  * @returns The deleted session
  * @throws {Error} If the session does not exist
  */
-export const deleteSession = async (sessionId: number) => {
+export const deleteSession = async (code: number) => {
   return prisma.session.delete({
-    where: {
-      id: sessionId,
-    },
+    where: { code },
   });
 };
 
