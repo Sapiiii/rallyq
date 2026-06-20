@@ -35,11 +35,11 @@ export const CreateGameSchema = z.object({
 
 export type CreateGame = z.infer<typeof CreateGameSchema>;
 
-export const SessionIdParamSchema = z.object({
-  sessionId: z.coerce.number(),
+export const SessionCodeParamSchema = z.object({
+  sessionCode: z.coerce.number(),
 });
 
-export type SessionIdParam = z.infer<typeof SessionIdParamSchema>;
+export type SessionCodeParam = z.infer<typeof SessionCodeParamSchema>;
 
 export const HostTokenHeaderSchema = z.object({
   [HOST_TOKEN_HEADER]: z.string().min(1),

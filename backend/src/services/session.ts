@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma";
 import { generateToken, hashToken } from "../lib/token";
 import { Prisma } from "../../prisma/generated/prisma/client";
-import { CreatePlayer } from "../zod-schema";
+import { CreatePlayer, SessionCodeParam } from "../zod-schema";
 
 /**
  * Creates a new session with the given host name.
@@ -61,9 +61,17 @@ export const createSession = async ({ name: hostName }: CreatePlayer) => {
  * @returns The deleted session
  * @throws {Error} If the session does not exist
  */
-export const deleteSession = async (code: number) => {
+export const deleteSession = async ({
+  sessionCode: code,
+}: SessionCodeParam) => {
   return prisma.session.delete({
     where: { code },
+    include: {
+      players: true,
+      games: {
+        include: { playersInGame: { include: { player: true } } },
+      },
+    },
   });
 };
 
