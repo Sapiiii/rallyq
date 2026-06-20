@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma";
 import { generateToken, hashToken } from "../lib/token";
 import { Prisma } from "../../prisma/generated/prisma/client";
-import { PlayerNameInput } from "../middlewares/zod-schema";
+import { CreatePlayer } from "../zod-schema";
 
 /**
  * Creates a new session with the given host name.
@@ -17,9 +17,9 @@ import { PlayerNameInput } from "../middlewares/zod-schema";
  * @throws {Error} If a unique session 'code' cannot be acquired within 20 attempts
  * @throws {Error} If the database operation fails for any other reason
  */
-export const createSession = async ({ name: hostName }: PlayerNameInput) => {
-  const token = generateToken();
-  const hashedToken = hashToken(token);
+export const createSession = async ({ name: hostName }: CreatePlayer) => {
+  const hostToken = generateToken();
+  const hashedHostToken = hashToken(hostToken);
 
   const MAX_ATTEMPTS = 20;
 
@@ -29,7 +29,7 @@ export const createSession = async ({ name: hostName }: PlayerNameInput) => {
       const session = await prisma.session.create({
         data: {
           code,
-          hostToken: hashedToken,
+          hostToken: hashedHostToken,
           players: {
             create: { name: hostName },
           },
@@ -38,7 +38,7 @@ export const createSession = async ({ name: hostName }: PlayerNameInput) => {
           players: true,
         },
       });
-      return { session, token };
+      return { session, hostToken };
     } catch (error: any) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

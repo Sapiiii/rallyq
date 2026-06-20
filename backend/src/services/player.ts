@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma";
-import { PlayerNameInput } from "../middlewares/zod-schema";
+import { CreatePlayer } from "../zod-schema";
 
 /**
  * Creates a new player in the given session.
@@ -10,7 +10,7 @@ import { PlayerNameInput } from "../middlewares/zod-schema";
  * @throws {Error} If the session does not exist
  */
 export const createPlayer = async (
-  { name: playerName }: PlayerNameInput,
+  { name: playerName }: CreatePlayer,
   sessionId: number,
 ) => {
   return prisma.player.create({

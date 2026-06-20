@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { MatchSide } from "../../prisma/generated/prisma/client";
-import { CreateGameInput } from "../middlewares/zod-schema";
+import { CreateGame } from "../zod-schema";
 
 export const SCORING_SYSTEMS = {
   FIRST_TO_21: "FIRST_TO_21",
@@ -22,10 +22,7 @@ type ScoringSystem = ObjectValues<typeof SCORING_SYSTEMS>;
  * @throws {Error} If one or more players do not exist in this session
  * @throws {Error} If the database operation fails
  */
-export const createGame = async (
-  sessionId: number,
-  gameData: CreateGameInput,
-) => {
+export const createGame = async (sessionId: number, gameData: CreateGame) => {
   const { teamAScore, teamBScore, scoringSystem, players } = gameData;
 
   validatePlayerLayout(players);
