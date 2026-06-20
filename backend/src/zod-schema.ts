@@ -33,3 +33,15 @@ export const CreateGameSchema = z.object({
 });
 
 export type CreateGame = z.infer<typeof CreateGameSchema>;
+
+export const SessionIdParamSchema = z.object({
+  sessionId: z.coerce.number(),
+});
+
+export type SessionIdParam = z.infer<typeof SessionIdParamSchema>;
+
+export const HostTokenHeaderSchema = z.object({
+  "rallyq-host-token": z.string().min(1),
+});
+
+export type HostTokenHeader = z.infer<typeof HostTokenHeaderSchema>;
