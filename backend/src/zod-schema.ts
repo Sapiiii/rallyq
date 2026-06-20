@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SCORING_SYSTEMS } from "./services/game";
 import { MatchSide } from "../prisma/generated/prisma/enums";
+import { HOST_TOKEN_HEADER } from "./lib/token";
 
 const playerNameSchema = z
   .string()
@@ -41,7 +42,7 @@ export const SessionIdParamSchema = z.object({
 export type SessionIdParam = z.infer<typeof SessionIdParamSchema>;
 
 export const HostTokenHeaderSchema = z.object({
-  "rallyq-host-token": z.string().min(1),
+  [HOST_TOKEN_HEADER]: z.string().min(1),
 });
 
 export type HostTokenHeader = z.infer<typeof HostTokenHeaderSchema>;

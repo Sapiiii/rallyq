@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from "crypto";
 
+export const HOST_TOKEN_HEADER = "rallyq-host-token";
+
 export function generateToken(): string {
   return randomBytes(4).toString("hex").toUpperCase();
 }

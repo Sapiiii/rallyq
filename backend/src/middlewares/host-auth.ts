@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../config/prisma";
-import { hashToken } from "../lib/token";
+import { hashToken, HOST_TOKEN_HEADER } from "../lib/token";
 
 export const verifyHost = async (
   req: Request,
@@ -8,7 +8,7 @@ export const verifyHost = async (
   next: NextFunction,
 ) => {
   try {
-    const token = req.headers["x-host-token"] as string;
+    const token = req.headers[HOST_TOKEN_HEADER] as string;
     if (!token) return next(new Error("No token provided"));
 
     const hashedToken = hashToken(token);
