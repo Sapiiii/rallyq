@@ -61,9 +61,7 @@ export const createSession = async ({ name: hostName }: CreatePlayer) => {
  * @returns The deleted session
  * @throws {Error} If the session does not exist
  */
-export const deleteSession = async ({
-  sessionCode: code,
-}: SessionCodeParam) => {
+export const deleteSession = async ({ code }: SessionCodeParam) => {
   return prisma.session.delete({
     where: { code },
     include: {

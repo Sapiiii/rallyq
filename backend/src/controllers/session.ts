@@ -6,7 +6,6 @@ import { createSession, deleteSession } from "../services/session";
  * Starts a new session with the given host name.
  *
  * @route POST /sessions
- * @param req.body - { name: string } - the host's player name
  * @returns 201 with the created session and host player
  * @throws Passes validation or service errors to the error handler
  */
@@ -33,8 +32,7 @@ export const startSession = async (
 /**
  * Ends a session by code, deleting it along with all associated data.
  *
- * @route DELETE /sessions/delete/:sessionCode
- * @param req.params - { sessionCode: number } - the session's code
+ * @route DELETE /sessions/delete/:code
  * @returns 200 with a confirmation message
  * @throws Passes validation or service errors to the error handler
  */
@@ -43,17 +41,17 @@ export const endSession = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const sessionCode = SessionCodeParamSchema.safeParse(req.params);
-  if (sessionCode.success) {
+  const code = SessionCodeParamSchema.safeParse(req.params);
+  if (code.success) {
     try {
-      const session = await deleteSession(sessionCode.data);
+      const session = await deleteSession(code.data);
       return res.status(200).json(session);
     } catch (error) {
       next(error);
     }
   } else {
     const errorMessage =
-      sessionCode.error.issues[0]?.message || "Invalid session code";
+      code.error.issues[0]?.message || "Invalid session code";
     next(new Error(errorMessage));
   }
 };

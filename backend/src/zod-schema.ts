@@ -36,7 +36,7 @@ export const CreateGameSchema = z.object({
 export type CreateGame = z.infer<typeof CreateGameSchema>;
 
 export const SessionCodeParamSchema = z.object({
-  sessionCode: z.coerce.number(),
+  code: z.coerce.number(),
 });
 
 export type SessionCodeParam = z.infer<typeof SessionCodeParamSchema>;
