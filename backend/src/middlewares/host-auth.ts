@@ -9,7 +9,9 @@ export const verifyHost = async (
 ) => {
   try {
     const token = req.headers[HOST_TOKEN_HEADER] as string;
-    if (!token) return next(new Error("No token provided"));
+    if (typeof token !== "string" || token.length === 0) {
+      return next(new Error("No token provided"));
+    }
 
     const hashedToken = hashToken(token);
     const session = await prisma.session.findUnique({
