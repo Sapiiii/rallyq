@@ -1,14 +1,12 @@
 import dotenv from "dotenv";
+import { z } from "zod";
 
 dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL not populated in .env");
-}
+const envSchema = z.object({
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  PORT: z.coerce.number().default(3000),
+  FRONTEND_URL: z.url({ error: "FRONTEND_URL is required" }),
+});
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
-
-export const config = {
-  DATABASE_URL: process.env.DATABASE_URL,
-  PORT: PORT,
-};
+export const config = envSchema.parse(process.env);
