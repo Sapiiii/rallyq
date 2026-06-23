@@ -20,11 +20,21 @@ const playerAssignmentSchema = z.object({
   side: matchSideSchema,
 });
 
-export const CreatePlayerSchema = z.object({
+export const SessionCodeParamSchema = z.object({
+  code: z.coerce.number().int().positive(),
+});
+
+export type SessionCodeParam = z.infer<typeof SessionCodeParamSchema>;
+
+export const CreatePlayerSchema = SessionCodeParamSchema.extend({
   name: playerNameSchema,
 });
 
 export type CreatePlayer = z.infer<typeof CreatePlayerSchema>;
+
+export const CreateHostPlayerSchema = CreatePlayerSchema.omit({ code: true });
+
+export type CreateHostPlayer = z.infer<typeof CreateHostPlayerSchema>;
 
 export const CreateGameSchema = z.object({
   scoringSystem: scoringSystemSchema,
@@ -34,15 +44,3 @@ export const CreateGameSchema = z.object({
 });
 
 export type CreateGame = z.infer<typeof CreateGameSchema>;
-
-export const SessionCodeParamSchema = z.object({
-  code: z.coerce.number(),
-});
-
-export type SessionCodeParam = z.infer<typeof SessionCodeParamSchema>;
-
-export const HostTokenHeaderSchema = z.object({
-  [HOST_TOKEN_HEADER]: z.string().min(1),
-});
-
-export type HostTokenHeader = z.infer<typeof HostTokenHeaderSchema>;

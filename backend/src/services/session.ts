@@ -1,7 +1,12 @@
 import { prisma } from "../config/prisma";
 import { generateToken, hashToken } from "../lib/token";
 import { Prisma } from "../../prisma/generated/prisma/client";
-import { CreatePlayer, SessionCodeParam } from "../zod-schema";
+import {
+  CreateHostPlayer,
+  SessionCodeParam,
+  CreatePlayer,
+} from "../zod-schema";
+import { createPlayer } from "./player";
 
 /**
  * Creates a new session with the given host name.
@@ -17,7 +22,7 @@ import { CreatePlayer, SessionCodeParam } from "../zod-schema";
  * @throws {Error} If a unique session 'code' cannot be acquired within 20 attempts
  * @throws {Error} If the database operation fails for any other reason
  */
-export const createSession = async ({ name: hostName }: CreatePlayer) => {
+export const createSession = async ({ name: hostName }: CreateHostPlayer) => {
   const hostToken = generateToken();
   const hashedHostToken = hashToken(hostToken);
 
@@ -71,6 +76,31 @@ export const deleteSession = async ({ code }: SessionCodeParam) => {
       },
     },
   });
+};
+
+/**
+ * Joins a player to the session identified by the given code.
+ *
+ * Enforces session capacity before delegating player creation.
+ *
+ * @returns The created player
+ * @throws {Error} If the session does not exist or is full
+ */
+export const joinSession = async ({ name, code }: CreatePlayer) => {
+  const session = await prisma.session.findUniqueOrThrow({
+    where: { code },
+  });
+
+  const currentCapacity = await prisma.player.count({
+    where: {
+      sessionId: session.id,
+    },
+  });
+
+  if (currentCapacity >= session.maxCapacity) {
+    throw new Error("Session is full.");
+  }
+  return createPlayer({ name, code });
 };
 
 /**

@@ -1,22 +1,24 @@
 import { prisma } from "../config/prisma";
 import { CreatePlayer } from "../zod-schema";
+import { SessionCodeParam } from "../zod-schema";
 
 /**
  * Creates a new player in the given session.
  *
  * @param name - The pre-validated name of the player
- * @param sessionId - The ID of the session to add the player to
+ * @param code - The code of the session to add the player to
  * @returns The created player
  * @throws {Error} If the session does not exist
  */
-export const createPlayer = async (
-  { name: playerName }: CreatePlayer,
-  sessionId: number,
-) => {
+export const createPlayer = async ({ name, code }: CreatePlayer) => {
   return prisma.player.create({
     data: {
-      name: playerName,
-      sessionId,
+      name,
+      session: {
+        connect: {
+          code,
+        },
+      },
     },
   });
 };
@@ -35,15 +37,22 @@ export const deletePlayer = async (id: number) => {
 };
 
 /**
- * Retrieves all players in a given session ordered by when they joined.
+ * Retrieves all players in the session identified by the given code.
  *
- * @param sessionId - The ID of the session to retrieve players for
+ * Players are returned in ascending player ID order, which is used here
+ * as a proxy for join order.
+ *
+ * @param code - The public session code
  * @returns An array of players in the session
  * @throws {Error} If the session does not exist
  */
-export const getPlayersBySession = async (sessionId: number) => {
+export const getPlayersBySession = async ({ code }: SessionCodeParam) => {
   return prisma.player.findMany({
-    where: { sessionId },
+    where: {
+      session: {
+        code,
+      },
+    },
     orderBy: { id: "asc" },
   });
 };

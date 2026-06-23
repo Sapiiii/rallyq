@@ -6,4 +6,5 @@ model Session {
     
     games Game[]
     players Player[]
+    maxCapacity Int @default(28)
 }
